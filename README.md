@@ -1,6 +1,6 @@
-# DP-vllm-Inference-superfast
+# Multiprocessing-vllm-Inference-superfast
 
-이 코드는 데이터 병렬(Data Parallel, DP) 방식으로 여러 GPU를 동시에 사용해, 한 장의 GPU 메모리에 적재 가능한 크기의 단일 모델(예: Qwen/Qwen3-30B-A3B-Instruct-2507)을 기반으로 대규모 JSONL 데이터에 대해 빠르게 생성/증강 작업을 수행하기 위해 작성되었습니다. 따라서, 모델은 단일 GPU에 올라가는 크기임을 가정합니다. 
+이 코드는 멀티 프로세싱 방식으로 여러 GPU를 동시에 사용해, 한 장의 GPU 메모리에 적재 가능한 크기의 단일 모델(예: Qwen/Qwen3-30B-A3B-Instruct-2507)을 기반으로 대규모 JSONL 데이터에 대해 빠르게 생성/증강 작업을 수행하기 위해 작성되었습니다. 따라서, 모델은 단일 GPU에 올라가는 크기임을 가정합니다. 
 
 ---
 ### 사용 방법
