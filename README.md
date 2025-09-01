@@ -5,8 +5,8 @@
 ---
 ### 사용 방법
 ```bash
-git clone https://github.com/torchtorchkimtorch/DP-vllm-Inference-superfast.git
-cd DP-vllm-Inference-superfast/
+git clone https://github.com/torchtorchkimtorch/Multiprocessing-vllm-Inference-superfast.git
+cd Multiprocessing-vllm-Inference-superfast/
 pip install -r requirements.txt
 python inference.py
 ```
