@@ -56,6 +56,5 @@ MAX_NEW_TOKENS↑
 ---
 
 ### TODO
-1. reasoning hybrid 모델 사용 시 on/off
-2. args
+1. readme.md fix
 
