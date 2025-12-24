@@ -17,7 +17,7 @@ def parse_reasoning_args(s):
     out = {}
     for item in kv:
         k, v = item.split("=")
-        out[k] = str2bool(v)
+        out[k.strip()] = str2bool(v.strip())
     return out
 
 parser = argparse.ArgumentParser()
@@ -214,6 +214,14 @@ def merge_parts(part_paths: List[str], merged_path: str):
                 for line in fin:
                     fout.write(line)
 
+def cleanup_temp_files(part_paths: List[str], ckpt_paths: List[str]):
+    for p in part_paths:
+        if os.path.exists(p):
+            os.remove(p)
+    for c in ckpt_paths:
+        if os.path.exists(c):
+            os.remove(c)
+
 def main():
     '''
     전체 파이프라인을 실행
@@ -253,6 +261,7 @@ def main():
         p.join()
 
     merge_parts(part_paths, MERGED_OUT)
+    cleanup_temp_files(part_paths, ckpt_paths)
     print(f"[merge] -> {MERGED_OUT}")
 
 if __name__ == "__main__":

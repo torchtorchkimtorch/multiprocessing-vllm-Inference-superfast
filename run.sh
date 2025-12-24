@@ -1,16 +1,16 @@
 python inference.py \
-    --gpu_ids 0,1,2,3,4,5,6,7 \
-    --model_path /path/to/model \
-    --input_path /path/to/input.jsonl \
-    --output_path /path/to/output \
-    --output_name output \
+    --gpu_ids 1,2 \
+    --model_path Qwen/Qwen3-4B \
+    --input_path /data_x/mhkim0929/PR/data/debug.jsonl \
+    --output_path /data_x/mhkim0929/PR/result \
+    --output_name debug \
     --chat_field chat \
-    --gen_field tagged \
-    --chunk_size 5000 \
+    --gen_field generated \
+    --chunk_size 1000 \
     --save_every 200 \
-    --max_new_tokens 384 \
+    --max_new_tokens 4096 \
     --max_model_len 8192 \
     --temperature 0.6 \
     --top_k 20 \
     --top_p 0.95 \
-    --reasoning "enable_thinking=True"
+    --reasoning enable_thinking=True
