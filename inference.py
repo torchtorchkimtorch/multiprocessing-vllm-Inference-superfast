@@ -5,22 +5,53 @@ from multiprocessing import Process
 from typing import List, Dict, Any
 from vllm import LLM, SamplingParams
 from transformers import AutoTokenizer
+import argparse
 
-MODEL_PATH = "MODEL_NAME"
-INPUT_JSONL = "INPUT_JSONL_PATH"  
-OUT_DIR = "OUT_DIR_PATH"
-FILE_NAME = "FILE_NAME"  # 예: "tagged_data"
+def str2bool(v):
+    return v.lower() in ("true", "1", "t", "y", "yes")
+
+def parse_reasoning_args(s):
+    if not s:
+        return {}
+    kv = s.split(",")
+    out = {}
+    for item in kv:
+        k, v = item.split("=")
+        out[k] = str2bool(v)
+    return out
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--model_path", type=str, required=True)
+parser.add_argument("--input_path", type=str, required=True)
+parser.add_argument("--output_path", type=str, required=True)
+parser.add_argument("--output_name", type=str, required=True)
+parser.add_argument("--chat_field", type=str, required=True, help="Field name for chat prompt in input data")
+parser.add_argument("--gen_field", type=str, required=True, help="Field name to store generated text in output data")
+parser.add_argument("--gpu_ids", type=str, required=True, help="GPU IDs to use, comma-separated")
+parser.add_argument("--chunk_size", type=int, default=5000, help="Batch size for vLLM")
+parser.add_argument("--save_every", type=int, default=200, help="Save checkpoint every N batches")
+parser.add_argument("--max_new_tokens", type=int, default=384, help="Max new tokens to generate")
+parser.add_argument("--max_model_len", type=int, default=8192, help="Max model length for vLLM")
+parser.add_argument("--temperature", type=float, default=0.6)
+parser.add_argument("--top_k", type=int, default=20)
+parser.add_argument("--top_p", type=float, default=0.95)
+parser.add_argument("--reasoning", type=str, default="")
+
+
+args = parser.parse_args()
+REASONING_KWARGS = parse_reasoning_args(args.reasoning)
+MODEL_PATH = args.model_path
+INPUT_JSONL = args.input_path
+OUT_DIR = args.output_path
+FILE_NAME = args.output_name
 MERGED_OUT = os.path.join(OUT_DIR, FILE_NAME+".jsonl")
-
-GPU_IDS = [0, 1, 2, 3, 4, 5, 6, 7]  # 사용 GPU 목록
-CHUNK_SIZE = 5000       # vLLM 배치 제출 크기(프롬프트 수)
-SAVE_EVERY = 200        # 이 개수마다 강제 저장/체크포인트
-
-CHAT_FIELD = "CHAT_FIELD"  # 데이터에서 채팅 프롬프트 필드 이름 예: "chat"
-GEN_FIELD = "GEN_FIELD"    # 데이터에서 생성된 텍스트 필드 이름 예: "tagged"
-
-MAX_NEW_TOKENS = 384
-MAX_MODEL_LEN = 8192      # 프롬프트+출력 합 상한         
+GPU_IDS = [int(x) for x in args.gpu_ids.split(",")]
+CHUNK_SIZE = args.chunk_size
+SAVE_EVERY = args.save_every
+CHAT_FIELD = args.chat_field
+GEN_FIELD = args.gen_field
+MAX_NEW_TOKENS = args.max_new_tokens
+MAX_MODEL_LEN = args.max_model_len      
 
 def load_data(path: str) -> List[Dict[str, Any]]:
     '''
@@ -106,7 +137,7 @@ def worker(gpu_id: int, shard_idx: int, shard: List[Dict[str, Any]], tmp_out_pat
 
     tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
     tokenized_prompts = [
-        tokenizer.apply_chat_template(d[CHAT_FIELD], tokenize=False, add_generation_prompt=True)
+        tokenizer.apply_chat_template(d[CHAT_FIELD], tokenize=False, add_generation_prompt=True, **REASONING_KWARGS)
         for d in shard
     ]
 
@@ -118,7 +149,7 @@ def worker(gpu_id: int, shard_idx: int, shard: List[Dict[str, Any]], tmp_out_pat
               max_model_len=MAX_MODEL_LEN,)
     
     sampling_params = SamplingParams(
-        temperature=0.6,
+        temperature=args.temperature,
         top_k=20,
         top_p=0.95,
         max_tokens=MAX_NEW_TOKENS,
